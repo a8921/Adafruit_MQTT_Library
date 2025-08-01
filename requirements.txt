@@ -1,0 +1,35 @@
+Flask==2.3.3
+requests==2.31.0
+
+# Core ML and Scientific Computing
+numpy==1.24.3
+sympy==1.12
+
+# Optional ML libraries (install as needed)
+# Uncomment the ones you want to use:
+
+# For advanced text analysis
+# sentence-transformers==2.2.2
+# scikit-learn==1.3.0
+
+# For clustering
+# umap-learn==0.5.3
+# hdbscan==0.8.33
+
+# For keyword extraction
+# keybert==0.8.1
+
+# For NLP and entity extraction
+# spacy==3.6.1
+# en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.6.0/en_core_web_sm-3.6.0-py3-none-any.whl
+
+# For advanced NLP tasks
+# transformers==4.33.2
+# torch==2.0.1
+
+# Development dependencies
+Werkzeug==2.3.7
+Jinja2==3.1.2
+MarkupSafe==2.1.3
+itsdangerous==2.1.2
+click==8.1.7

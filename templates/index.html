@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lysis AI - Advanced Text Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #f093fb;
+            --success-color: #4ecdc4;
+            --warning-color: #ffe66d;
+            --danger-color: #ff6b6b;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 2rem auto;
+            padding: 2rem;
+            max-width: 1200px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.2rem;
+        }
+
+        .analysis-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .analysis-type-selector {
+            margin-bottom: 1rem;
+        }
+
+        .analysis-type-selector .btn {
+            margin: 0.25rem;
+            border-radius: 25px;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .analysis-type-selector .btn.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .text-input {
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+            padding: 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            resize: vertical;
+            min-height: 200px;
+        }
+
+        .text-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            outline: none;
+        }
+
+        .analyze-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 25px;
+            padding: 0.75rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+            color: white;
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.6;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .results-container {
+            margin-top: 2rem;
+        }
+
+        .result-section {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .result-section h4 {
+            color: var(--dark-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .keyword-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin: 0.25rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sentiment-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: 600;
+            margin: 0.5rem 0;
+        }
+
+        .sentiment-positive {
+            background: rgba(78, 205, 196, 0.2);
+            color: #2d8a80;
+            border: 2px solid rgba(78, 205, 196, 0.3);
+        }
+
+        .sentiment-negative {
+            background: rgba(255, 107, 107, 0.2);
+            color: #c92a2a;
+            border: 2px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .sentiment-neutral {
+            background: rgba(255, 230, 109, 0.2);
+            color: #b8860b;
+            border: 2px solid rgba(255, 230, 109, 0.3);
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading-spinner .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border-width: 0.3rem;
+        }
+
+        .error-message {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            color: #c92a2a;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+
+        .success-message {
+            background: rgba(78, 205, 196, 0.1);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            color: #2d8a80;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+
+        .feature-status {
+            font-size: 0.8rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .feature-available {
+            color: var(--success-color);
+        }
+
+        .feature-unavailable {
+            color: #999;
+        }
+
+        .chat-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 1rem;
+            background: #f8f9fa;
+        }
+
+        .chat-message {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border-radius: 10px;
+        }
+
+        .chat-user {
+            background: var(--primary-color);
+            color: white;
+            margin-left: 2rem;
+        }
+
+        .chat-ai {
+            background: white;
+            border: 1px solid #dee2e6;
+            margin-right: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 1rem;
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .analysis-type-selector .btn {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="main-container">
+            <div class="header">
+                <h1><i class="fas fa-brain"></i> Lysis AI</h1>
+                <p>Advanced Text Analysis & Mathematical Solver</p>
+            </div>
+
+            <!-- Analysis Input Section -->
+            <div class="analysis-card">
+                <h3><i class="fas fa-edit"></i> Text Analysis</h3>
+                
+                <div class="analysis-type-selector">
+                    <button type="button" class="btn btn-outline-primary active" data-type="auto">
+                        <i class="fas fa-magic"></i> Auto-Detect
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-type="mathematical">
+                        <i class="fas fa-calculator"></i> Mathematical
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-type="sentiment">
+                        <i class="fas fa-heart"></i> Sentiment
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-type="keywords">
+                        <i class="fas fa-tags"></i> Keywords
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-type="summary">
+                        <i class="fas fa-compress-alt"></i> Summary
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-type="entities">
+                        <i class="fas fa-user-tag"></i> Entities
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-type="comprehensive">
+                        <i class="fas fa-list-check"></i> Comprehensive
+                    </button>
+                </div>
+
+                <div class="mb-3">
+                    <textarea class="form-control text-input" id="textInput" 
+                              placeholder="Enter your text here for analysis... 
+
+Examples:
+• Mathematical: 'Solve x^2 + 5x + 6 = 0'
+• Sentiment: 'I love this new product! It works amazingly well.'
+• General text: Any article, essay, or document you want analyzed.">
+                    </textarea>
+                </div>
+
+                <div class="text-center">
+                    <button class="btn analyze-btn" id="analyzeBtn">
+                        <i class="fas fa-search"></i> Analyze Text
+                    </button>
+                </div>
+
+                <div class="feature-status" id="featureStatus">
+                    <small><i class="fas fa-info-circle"></i> Loading feature availability...</small>
+                </div>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div class="loading-spinner" id="loadingSpinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Analyzing...</span>
+                </div>
+                <p class="mt-2">Analyzing your text...</p>
+            </div>
+
+            <!-- Results Container -->
+            <div class="results-container" id="resultsContainer"></div>
+
+            <!-- Chat Section -->
+            <div class="analysis-card">
+                <h3><i class="fas fa-comments"></i> Chat with Lysis AI</h3>
+                <div class="chat-container" id="chatContainer">
+                    <div class="chat-message chat-ai">
+                        <strong>Lysis AI:</strong> Hello! I'm your text analysis assistant. Ask me about my capabilities or paste some text for analysis!
+                    </div>
+                </div>
+                <div class="input-group mt-3">
+                    <input type="text" class="form-control" id="chatInput" 
+                           placeholder="Ask me anything about text analysis...">
+                    <button class="btn btn-primary" id="chatSendBtn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentAnalysisType = 'auto';
+        let availableFeatures = {};
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFeatureStatus();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Analysis type selector
+            document.querySelectorAll('.analysis-type-selector .btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.analysis-type-selector .btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentAnalysisType = this.dataset.type;
+                });
+            });
+
+            // Analyze button
+            document.getElementById('analyzeBtn').addEventListener('click', analyzeText);
+
+            // Chat functionality
+            document.getElementById('chatSendBtn').addEventListener('click', sendChatMessage);
+            document.getElementById('chatInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendChatMessage();
+                }
+            });
+
+            // Enter key for text analysis
+            document.getElementById('textInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    analyzeText();
+                }
+            });
+        }
+
+        async function loadFeatureStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                availableFeatures = data.features;
+                displayFeatureStatus();
+            } catch (error) {
+                console.error('Failed to load feature status:', error);
+                document.getElementById('featureStatus').innerHTML = 
+                    '<small class="text-danger"><i class="fas fa-exclamation-triangle"></i> Failed to load feature status</small>';
+            }
+        }
+
+        function displayFeatureStatus() {
+            const statusElement = document.getElementById('featureStatus');
+            let statusHtml = '<small><strong>Available Features:</strong><br>';
+            
+            for (const [feature, available] of Object.entries(availableFeatures)) {
+                const icon = available ? 'fas fa-check feature-available' : 'fas fa-times feature-unavailable';
+                const featureName = feature.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                statusHtml += `<i class="${icon}"></i> ${featureName} `;
+            }
+            
+            statusHtml += '</small>';
+            statusElement.innerHTML = statusHtml;
+        }
+
+        async function analyzeText() {
+            const textInput = document.getElementById('textInput');
+            const text = textInput.value.trim();
+
+            if (!text) {
+                showError('Please enter some text to analyze.');
+                return;
+            }
+
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const resultsContainer = document.getElementById('resultsContainer');
+
+            // Show loading state
+            analyzeBtn.disabled = true;
+            loadingSpinner.style.display = 'block';
+            resultsContainer.innerHTML = '';
+
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        analysis_type: currentAnalysisType
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayResults(data);
+                } else {
+                    showError(data.error || 'Analysis failed');
+                }
+            } catch (error) {
+                console.error('Analysis error:', error);
+                showError('Network error. Please try again.');
+            } finally {
+                analyzeBtn.disabled = false;
+                loadingSpinner.style.display = 'none';
+            }
+        }
+
+        function displayResults(data) {
+            const container = document.getElementById('resultsContainer');
+            let html = '';
+
+            // Basic Statistics
+            if (data.basic_stats) {
+                html += createResultSection('Basic Statistics', 'fas fa-chart-bar', createBasicStatsHTML(data.basic_stats));
+            }
+
+            // Analysis Type Detection
+            if (data.detected_type) {
+                html += `<div class="alert alert-info">
+                    <i class="fas fa-lightbulb"></i> <strong>Auto-detected analysis type:</strong> ${data.detected_type}
+                </div>`;
+            }
+
+            // Mathematical Analysis
+            if (data.mathematical) {
+                html += createResultSection('Mathematical Analysis', 'fas fa-calculator', createMathematicalHTML(data.mathematical));
+            }
+
+            // Sentiment Analysis
+            if (data.sentiment) {
+                html += createResultSection('Sentiment Analysis', 'fas fa-heart', createSentimentHTML(data.sentiment));
+            }
+
+            // Keywords
+            if (data.keywords) {
+                html += createResultSection('Keywords', 'fas fa-tags', createKeywordsHTML(data.keywords));
+            }
+
+            // Summary
+            if (data.summary) {
+                html += createResultSection('Summary', 'fas fa-compress-alt', createSummaryHTML(data.summary));
+            }
+
+            // Entities
+            if (data.entities) {
+                html += createResultSection('Named Entities', 'fas fa-user-tag', createEntitiesHTML(data.entities));
+            }
+
+            // Basic Analysis
+            if (data.basic_analysis) {
+                html += createResultSection('Basic Analysis', 'fas fa-list', createBasicAnalysisHTML(data.basic_analysis));
+            }
+
+            // Error handling
+            if (data.error) {
+                html += `<div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i> ${data.error}
+                </div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function createResultSection(title, icon, content) {
+            return `
+                <div class="result-section">
+                    <h4><i class="${icon}"></i> ${title}</h4>
+                    ${content}
+                </div>
+            `;
+        }
+
+        function createBasicStatsHTML(stats) {
+            return `
+                <div class="row">
+                    <div class="col-md-3 col-6">
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.character_count || 0}</div>
+                            <div class="stat-label">Characters</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.word_count || 0}</div>
+                            <div class="stat-label">Words</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.sentence_count || 0}</div>
+                            <div class="stat-label">Sentences</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.paragraph_count || 0}</div>
+                            <div class="stat-label">Paragraphs</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-value">${(stats.average_word_length || 0).toFixed(1)}</div>
+                            <div class="stat-label">Avg Word Length</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="stat-card">
+                            <div class="stat-value">${(stats.average_sentence_length || 0).toFixed(1)}</div>
+                            <div class="stat-label">Avg Sentence Length</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createMathematicalHTML(math) {
+            let html = `<p><small><strong>Method:</strong> ${math.method || 'SymPy'}</small></p>`;
+            
+            if (math.error) {
+                return html + `<div class="alert alert-warning">${math.error}</div>`;
+            }
+
+            if (math.equations_found && math.equations_found.length > 0) {
+                html += '<h6>Equations Found:</h6><ul>';
+                math.equations_found.forEach(eq => {
+                    html += `<li><code>${eq}</code></li>`;
+                });
+                html += '</ul>';
+            }
+
+            if (math.solutions && math.solutions.length > 0) {
+                html += '<h6>Solutions:</h6>';
+                math.solutions.forEach(sol => {
+                    html += `<div class="alert alert-success">
+                        <strong>Equation:</strong> <code>${sol.equation}</code><br>
+                        <strong>Solutions:</strong> ${sol.solutions.join(', ')}
+                    </div>`;
+                });
+            }
+
+            if (math.simplified_expressions && math.simplified_expressions.length > 0) {
+                html += '<h6>Simplified Expressions:</h6>';
+                math.simplified_expressions.forEach(expr => {
+                    html += `<div class="mb-2">
+                        <strong>Original:</strong> <code>${expr.original}</code><br>
+                        <strong>Simplified:</strong> <code>${expr.simplified}</code>
+                    </div>`;
+                });
+            }
+
+            if (math.derivatives && math.derivatives.length > 0) {
+                html += '<h6>Derivatives:</h6>';
+                math.derivatives.forEach(deriv => {
+                    html += `<div class="mb-2">
+                        <strong>f(${deriv.variable}):</strong> <code>${deriv.expression}</code><br>
+                        <strong>f'(${deriv.variable}):</strong> <code>${deriv.derivative}</code>
+                    </div>`;
+                });
+            }
+
+            return html;
+        }
+
+        function createSentimentHTML(sentiment) {
+            let html = `<p><small><strong>Method:</strong> ${sentiment.method}</small></p>`;
+            
+            if (sentiment.error) {
+                return html + `<div class="alert alert-warning">${sentiment.error}</div>`;
+            }
+
+            const sentimentClass = `sentiment-${sentiment.sentiment}`;
+            const sentimentIcon = sentiment.sentiment === 'positive' ? 'fas fa-smile' : 
+                                sentiment.sentiment === 'negative' ? 'fas fa-frown' : 'fas fa-meh';
+
+            html += `
+                <div class="sentiment-indicator ${sentimentClass}">
+                    <i class="${sentimentIcon}"></i>
+                    <span><strong>${sentiment.sentiment.toUpperCase()}</strong></span>
+                    <span>(${(sentiment.confidence * 100).toFixed(1)}% confidence)</span>
+                </div>
+            `;
+
+            if (sentiment.positive_words_found !== undefined) {
+                html += `<p><small>Positive words: ${sentiment.positive_words_found}, Negative words: ${sentiment.negative_words_found}</small></p>`;
+            }
+
+            return html;
+        }
+
+        function createKeywordsHTML(keywords) {
+            let html = `<p><small><strong>Method:</strong> ${keywords.method}</small></p>`;
+            
+            if (keywords.error) {
+                return html + `<div class="alert alert-warning">${keywords.error}</div>`;
+            }
+
+            if (keywords.keywords && keywords.keywords.length > 0) {
+                html += '<div class="mb-3">';
+                keywords.keywords.forEach(kw => {
+                    const score = typeof kw.score === 'number' ? kw.score.toFixed(3) : kw.score;
+                    html += `<span class="keyword-tag" title="Score: ${score}">${kw.keyword}</span>`;
+                });
+                html += '</div>';
+            }
+
+            return html;
+        }
+
+        function createSummaryHTML(summary) {
+            let html = `<p><small><strong>Method:</strong> ${summary.method}</small></p>`;
+            
+            if (summary.error) {
+                return html + `<div class="alert alert-warning">${summary.error}</div>`;
+            }
+
+            if (summary.summary) {
+                html += `<div class="alert alert-info">${summary.summary}</div>`;
+                
+                if (summary.original_length && summary.summary_length) {
+                    html += `<p><small>
+                        Original: ${summary.original_length} words → Summary: ${summary.summary_length} words 
+                        (${(summary.compression_ratio * 100).toFixed(1)}% compression)
+                    </small></p>`;
+                }
+            }
+
+            if (summary.note) {
+                html += `<p><small><em>${summary.note}</em></small></p>`;
+            }
+
+            return html;
+        }
+
+        function createEntitiesHTML(entities) {
+            let html = `<p><small><strong>Method:</strong> ${entities.method}</small></p>`;
+            
+            if (entities.error) {
+                return html + `<div class="alert alert-warning">${entities.error}</div>`;
+            }
+
+            if (entities.entities_by_type) {
+                for (const [type, entityList] of Object.entries(entities.entities_by_type)) {
+                    html += `<h6>${type}:</h6>`;
+                    html += '<div class="mb-3">';
+                    entityList.forEach(entity => {
+                        html += `<span class="keyword-tag">${entity}</span>`;
+                    });
+                    html += '</div>';
+                }
+            }
+
+            if (entities.total_entities) {
+                html += `<p><small>Total entities found: ${entities.total_entities}</small></p>`;
+            }
+
+            return html;
+        }
+
+        function createBasicAnalysisHTML(basic) {
+            let html = '';
+            
+            if (basic.error) {
+                return `<div class="alert alert-warning">${basic.error}</div>`;
+            }
+
+            if (basic.word_frequency) {
+                html += '<h6>Most Common Words:</h6><div class="mb-3">';
+                for (const [word, count] of Object.entries(basic.word_frequency)) {
+                    html += `<span class="keyword-tag" title="Count: ${count}">${word}</span>`;
+                }
+                html += '</div>';
+            }
+
+            if (basic.estimated_reading_time_minutes) {
+                html += `<p><strong>Estimated Reading Time:</strong> ${basic.estimated_reading_time_minutes} minutes</p>`;
+            }
+
+            if (basic.lexical_diversity) {
+                html += `<p><strong>Lexical Diversity:</strong> ${(basic.lexical_diversity * 100).toFixed(1)}%</p>`;
+            }
+
+            return html;
+        }
+
+        async function sendChatMessage() {
+            const chatInput = document.getElementById('chatInput');
+            const message = chatInput.value.trim();
+
+            if (!message) return;
+
+            const chatContainer = document.getElementById('chatContainer');
+            
+            // Add user message
+            addChatMessage(message, 'user');
+            chatInput.value = '';
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    addChatMessage(data.response, 'ai');
+                } else {
+                    addChatMessage(`Error: ${data.error}`, 'ai');
+                }
+            } catch (error) {
+                console.error('Chat error:', error);
+                addChatMessage('Sorry, I encountered an error. Please try again.', 'ai');
+            }
+        }
+
+        function addChatMessage(message, sender) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message chat-${sender}`;
+            
+            const senderName = sender === 'user' ? 'You' : 'Lysis AI';
+            messageDiv.innerHTML = `<strong>${senderName}:</strong> ${message}`;
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function showError(message) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            resultsContainer.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i> ${message}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
