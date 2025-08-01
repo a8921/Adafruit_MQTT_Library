@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal R&D AI Assistant</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        .chat-container {
+            padding: 30px;
+            height: 500px;
+            overflow-y: auto;
+            border-bottom: 1px solid #eee;
+        }
+        .message {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+        .user-message {
+            background: #e3f2fd;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        .ai-message {
+            background: #f5f5f5;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+        .input-container {
+            padding: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .input-container input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .input-container input:focus {
+            border-color: #667eea;
+        }
+        .input-container button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .input-container button:hover {
+            transform: translateY(-2px);
+        }
+        .input-container button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .status {
+            padding: 10px 30px;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+            font-size: 14px;
+            color: #666;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .loading.show {
+            display: block;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .debug-info {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 Universal R&D AI Assistant</h1>
+            <p>Advanced research-grade responses for any technical, scientific, or engineering question</p>
+        </div>
+        
+        <div class="chat-container" id="chatContainer">
+            <div class="message ai-message">
+                <strong>Universal R&D AI:</strong><br>
+                Hello! I'm your advanced R&D assistant. I can help with:
+                <ul>
+                    <li>🔍 <strong>What is</strong> - Definitions and explanations</li>
+                    <li>🔧 <strong>How to make</strong> - Manufacturing and synthesis</li>
+                    <li>⚖️ <strong>Comparison</strong> - Analysis and benchmarking</li>
+                    <li>🛠️ <strong>Troubleshooting</strong> - Problem solving</li>
+                    <li>📈 <strong>Optimization</strong> - Performance improvement</li>
+                    <li>🌐 <strong>Applications</strong> - Use cases and implementations</li>
+                    <li>🔮 <strong>Future trends</strong> - Emerging technologies</li>
+                    <li>🔬 <strong>Research gaps</strong> - Open problems and challenges</li>
+                    <li>🧮 <strong>Numerical expressions</strong> - Mathematical calculations</li>
+                </ul>
+                Ask me anything technical, scientific, or engineering-related!
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>Processing your request with Universal R&D AI...</div>
+        </div>
+        
+        <div class="input-container">
+            <input type="text" id="questionInput" placeholder="Ask any technical, scientific, or engineering question..." onkeypress="handleKeyPress(event)">
+            <button onclick="askQuestion()" id="askButton">Ask</button>
+        </div>
+        
+        <div class="status" id="status">
+            System Status: Checking...
+        </div>
+    </div>
+
+    <script>
+        let sessionId = null;
+
+        // Check system status on load
+        window.onload = function() {
+            checkStatus();
+        };
+
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const status = data.ollama_connected ? 'Online' : 'Partial (Ollama not connected)';
+                    document.getElementById('status').innerHTML = 
+                        `System Status: ${status} | Database: ${data.database_size} papers | Features: Intent Detection ✅ | Numerical Solving ✅ | Semantic Search ${data.universal_features.semantic_search ? '✅' : '⚠️'}`;
+                } else {
+                    document.getElementById('status').innerHTML = 'System Status: Error checking status';
+                }
+            } catch (error) {
+                document.getElementById('status').innerHTML = 'System Status: Offline';
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                askQuestion();
+            }
+        }
+
+        async function askQuestion() {
+            const questionInput = document.getElementById('questionInput');
+            const askButton = document.getElementById('askButton');
+            const loading = document.getElementById('loading');
+            const chatContainer = document.getElementById('chatContainer');
+            
+            const question = questionInput.value.trim();
+            if (!question) return;
+
+            // Disable input and show loading
+            questionInput.disabled = true;
+            askButton.disabled = true;
+            loading.classList.add('show');
+
+            // Add user message
+            addMessage('You', question, 'user-message');
+
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ question: question })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    addMessage('Universal R&D AI', data.answer, 'ai-message', data.debug);
+                } else {
+                    addMessage('System Error', data.error || 'An error occurred', 'ai-message');
+                }
+            } catch (error) {
+                addMessage('System Error', 'Failed to connect to the AI service. Please check if Ollama is running.', 'ai-message');
+            }
+
+            // Re-enable input and hide loading
+            questionInput.disabled = false;
+            askButton.disabled = false;
+            loading.classList.remove('show');
+            questionInput.value = '';
+            questionInput.focus();
+        }
+
+        function addMessage(sender, content, className, debugInfo = null) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${className}`;
+            
+            let messageContent = `<strong>${sender}:</strong><br>${content}`;
+            
+            if (debugInfo) {
+                messageContent += `
+                    <div class="debug-info">
+                        <strong>Debug Info:</strong><br>
+                        Intent: ${debugInfo.intent_detected || 'N/A'}<br>
+                        Domain: ${debugInfo.domain_detected || 'N/A'}<br>
+                        Papers Used: ${debugInfo.papers_used || 0}<br>
+                        Complexity: ${debugInfo.complexity_level || 'N/A'}
+                    </div>
+                `;
+            }
+            
+            messageDiv.innerHTML = messageContent;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>
